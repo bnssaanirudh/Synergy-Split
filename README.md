@@ -49,7 +49,8 @@ The **Household Council** turns a live, structured house imbalance into three ma
 - **Live Household Overview**: Real-time Harmony Index, Fairness Score, token distribution radar, and completed vs. overdue metrics.
 - **Command Center**: Risk forecast, member contribution radar, active intervention queue, and JSON house report export.
 - **Chore & Bill Automations**: Daily, weekly, and monthly chore recurrence engine auto-generating next actionable tasks upon completion.
-- **Cloudflare D1 & Drizzle ORM Persistence**: Durable relational database storage for members, chores, bills, ledger events, and AI nudges.
+- **Cloudflare Deployment**: Fully deployed and hosted on Cloudflare (Cloudflare Workers/Pages) for edge performance.
+- **Cloudflare D1 & Drizzle ORM Persistence**: Durable relational database storage using Cloudflare D1 for members, chores, bills, ledger events, and AI nudges.
 - **Atomic Transactions & Protection**: Idempotent actions preventing duplicate chore completions or bill payments.
 - **Timeliness-Aware Rewards**: Effort-based multipliers for chores and amount-neutral flat rewards for bills.
 - **Inspectable Fairness Lab**: Interactive mathematical explanation of payoff rules, Gini coefficient, and safety limits.
@@ -225,6 +226,12 @@ Convenes the AI Household Council for structured dispute resolution.
    - `npm test` — Run automated test suite
    - `npm run lint` — Lint codebase with ESLint
    - `npm run db:generate` — Generate Drizzle migrations
+
+### ☁️ Deployment
+
+SynergySplit is designed to be deployed entirely on **Cloudflare**. It takes advantage of:
+- **Cloudflare Pages / Workers** for hosting the application globally at the edge.
+- **Cloudflare D1 Database** as a fast, globally distributed relational database for persisting all household data.
 
 ---
 
