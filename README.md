@@ -180,7 +180,7 @@ Convenes the AI Household Council for structured dispute resolution.
 
 1. **Clone the repository and install dependencies**:
    ```bash
-   git clone https://github.com/Anurag-446/Synergy-Split.git
+   git clone https://github.com/bnssaanirudh/Synergy-Split.git
    cd Synergy-Split
    npm ci
    ```
