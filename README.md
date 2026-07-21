@@ -25,6 +25,7 @@
 - [System Architecture](#-system-architecture)
 - [API Reference](#-api-reference)
 - [Getting Started & Local Development](#-getting-started--local-development)
+  - [Cloudflare Deployment](#-deployment)
 - [3-Person, 2-Day Hackathon Execution Split](#-3-person-2-day-hackathon-execution-split)
 - [3-Minute Demo Walkthrough Script](#-3-minute-demo-walkthrough-script)
 - [Safety, Privacy & Scope Boundaries](#-safety-privacy--scope-boundaries)
