@@ -1,0 +1,1 @@
+ALTER TABLE `chores` ADD `recurrence` text DEFAULT 'none' NOT NULL;

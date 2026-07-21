@@ -1,153 +1,243 @@
 # SynergySplit
 
-SynergySplit is a game-theoretic coordination app for shared homes. It makes chores, bills, and cooperation visible without turning a household into a surveillance system. Members earn non-transferable Harmony Tokens for useful, timely contributions; a repeated-game reputation score smooths out one bad week; and a GPT-5.6 Sol mediator drafts private, face-saving reminders.
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.6-black?style=flat&logo=next.js)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19.2.6-61DAFB?style=flat&logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org)
+[![Cloudflare D1](https://img.shields.io/badge/Cloudflare_D1-Drizzle_ORM-F38020?style=flat&logo=cloudflare)](https://developers.cloudflare.com/d1/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5.6_Sol-412991?style=flat&logo=openai)](https://platform.openai.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## What is implemented
+**SynergySplit** is a game-theoretic coordination app for shared homes. It makes chores, bills, and household cooperation transparent and fair without turning a shared living space into a surveillance system. Members earn non-transferable **Harmony Tokens (HT)** for useful, timely contributions; a repeated-game reputation score smooths out temporary imbalances; and a **GPT-5.6 Sol mediator** drafts private, face-saving nudges and structured council agreements.
 
-- Cinematic 3D product landing page with an interactive Harmony Core and live fairness simulator
-- Live household overview with harmony, fairness, contribution, and completion metrics
-- Command Center with cooperation risk, completion forecast, intervention queue, member radar, and JSON house-report export
-- Daily, weekly, and monthly chore automations that regenerate the next actionable occurrence
-- Durable Cloudflare D1 data for members, chores, bills, ledger events, and AI nudges
-- Atomic chore-completion and bill-payment actions with duplicate-action protection
-- Timeliness-aware chore rewards and amount-neutral bill rewards
-- Add-chore, add-bill, member-switching, filtering, activity-feed, and demo-reset flows
-- Inspectable Fairness Lab explaining the payoff rules and safety constraints
-- GPT-5.6 Sol mediator through the OpenAI Responses API
-- Deterministic safety fallback when `OPENAI_API_KEY` is not configured
-- Responsive desktop/mobile UI, pointer-reactive depth, and reduced-motion support
+---
 
-## Why the game is fairer than a points leaderboard
+## 📋 Table of Contents
 
-Harmony Tokens have no cash value and cannot be traded. They are a short-term cooperation signal.
+- [The Winning Demo: Household Council](#-the-winning-demo-household-council)
+- [Key Features & Implemented Capabilities](#-key-features--implemented-capabilities)
+- [Game Theory & Fairness Engine](#-game-theory--fairness-engine)
+  - [Chores Payoff Function](#chores)
+  - [Bills Payoff Function](#bills)
+  - [Repeated-Game Memory & Reputation](#repeated-game-reputation)
+  - [Household Fairness (Gini Coefficient)](#household-fairness)
+- [AI Architecture & GPT-5.6 Integration](#-ai-architecture--gpt-56-integration)
+- [System Architecture](#-system-architecture)
+- [API Reference](#-api-reference)
+- [Getting Started & Local Development](#-getting-started--local-development)
+- [3-Person, 2-Day Hackathon Execution Split](#-3-person-2-day-hackathon-execution-split)
+- [3-Minute Demo Walkthrough Script](#-3-minute-demo-walkthrough-script)
+- [Safety, Privacy & Scope Boundaries](#-safety-privacy--scope-boundaries)
+
+---
+
+## 🏛️ The Winning Demo: Household Council
+
+The **Household Council** turns a live, structured house imbalance into three materially different agreements with explicit trade-offs, a recommended path, assignments, a reversible check-in, and safety boundaries. 
+
+- **GPT-5.6 Sol** handles bounded deliberation.
+- **Deterministic Code** owns the ledger, fairness calculation, deadlines, permissions, and all state mutations.
+- **Safety Guarantee**: The council can never silently change household data or send unapproved messages.
+
+> **3-Minute Judge Walkthrough**: Open the public demo → enter the dashboard → select **Household Council** → click **Convene Household Council** → compare the three multi-option plans → open **House Rules** to inspect system boundaries and provenance.
+
+---
+
+## ✨ Key Features & Implemented Capabilities
+
+- **Cinematic 3D Landing Page**: Interactive 3D Harmony Core with real-time mouse/touch responsiveness and a live fairness simulator.
+- **Live Household Overview**: Real-time Harmony Index, Fairness Score, token distribution radar, and completed vs. overdue metrics.
+- **Command Center**: Risk forecast, member contribution radar, active intervention queue, and JSON house report export.
+- **Chore & Bill Automations**: Daily, weekly, and monthly chore recurrence engine auto-generating next actionable tasks upon completion.
+- **Cloudflare D1 & Drizzle ORM Persistence**: Durable relational database storage for members, chores, bills, ledger events, and AI nudges.
+- **Atomic Transactions & Protection**: Idempotent actions preventing duplicate chore completions or bill payments.
+- **Timeliness-Aware Rewards**: Effort-based multipliers for chores and amount-neutral flat rewards for bills.
+- **Inspectable Fairness Lab**: Interactive mathematical explanation of payoff rules, Gini coefficient, and safety limits.
+- **GPT-5.6 Sol Nudge Mediator**: Serverless AI mediator generating private, non-punitive nudges via the OpenAI Responses API.
+- **Automatic Model Cascade**: Fallback flow: `gpt-5.6-sol` → `gpt-5.6-luna` → labelled deterministic safety fallback.
+- **Accessible & Responsive UI**: Glassmorphism aesthetic, dark mode support, fluid mobile/desktop layouts, and reduced-motion compliance.
+
+---
+
+## ⚖️ Game Theory & Fairness Engine
+
+Harmony Tokens have **no cash value** and **cannot be traded**. They serve strictly as a short-term cooperation signal.
 
 ### Chores
 
-```text
-chore reward = effort points × timeliness multiplier
+Chores award points scaled by completion timeliness:
 
-early by 12h or more: 1.25
-on time:              1.00
-late:                 0.70
-```
+$$\text{Chore Reward} = \text{Effort Points} \times \text{Timeliness Multiplier}$$
+
+| Timeliness Window | Multiplier |
+|---|---|
+| Early by 12h or more | **1.25x** |
+| On time | **1.00x** |
+| Late | **0.70x** |
 
 ### Bills
 
-Bill rewards depend on timeliness, not the amount:
+Bill rewards depend exclusively on timeliness, **not the bill amount**:
 
-```text
-3+ days early: 8 HT
-on time:       6 HT
-late:          3 HT
+| Timeliness | Reward |
+|---|---|
+| 3+ days early | **8 HT** |
+| On time | **6 HT** |
+| Late | **3 HT** |
+
+*Rationale: Prevents wealthier household members from buying top reputation simply by paying larger monetary bills.*
+
+### Repeated-Game Reputation
+
+$$\text{Reputation}_{new} = 0.70 \times \text{Reputation}_{prior} + 0.30 \times \text{Cooperation}_{current}$$
+
+*The memory term prevents one off-week or missed chore from becoming a permanent mark while rewarding long-term consistency.*
+
+### Household Fairness
+
+The dashboard calculates the Gini coefficient of member token totals and maps it to a **0–100 Fairness Score**. The score measures contribution visibility and equity, not individual character.
+
+---
+
+## 🤖 AI Architecture & GPT-5.6 Integration
+
+The server-only routes (`/api/nudge` and `/api/council`) interact with the OpenAI Responses API:
+
+```json
+{
+  "model": "gpt-5.6-sol",
+  "reasoning": { "effort": "low" },
+  "max_output_tokens": 160
+}
 ```
 
-That prevents a wealthier member from buying the top reputation simply by paying the most expensive bill.
+### Prompt Safety & Guardrails
+- **Inert Data Handling**: All user-supplied inputs (names, descriptions, task titles) are sanitized as inert data.
+- **Strict Prohibition**: Instructions explicitly forbid shaming, threat escalation, psychological diagnoses, public rankings, or financial advice.
+- **Fallback Guarantee**: If `OPENAI_API_KEY` is missing or requests fail, a transparent, labelled deterministic fallback engine generates structured outputs without breaking application workflows.
 
-### Repeated-game reputation
+---
 
-```text
-new reputation = 0.70 × prior reputation + 0.30 × current cooperation
-```
-
-The memory term rewards consistency while preventing one missed chore from becoming a permanent label.
-
-### Household fairness
-
-The dashboard converts the Gini coefficient of member token totals into a 0–100 fairness score. The score describes the distribution of visible contributions, not anyone's character.
-
-## GPT-5.6 integration
-
-The server-only `/api/nudge` route calls the OpenAI Responses API with:
+## 🏗️ System Architecture
 
 ```text
-model: gpt-5.6-sol
-reasoning effort: low
-maximum output: 160 tokens
-```
-
-The mediator receives only the recipient's display name, the requested tone, one task, its deadline, a coarse balance label, and the house harmony score. Its instruction explicitly forbids shaming, threats, diagnoses, public rankings, private-score disclosure, and financial advice. User-supplied names and task text are treated as inert data to reduce prompt-injection risk.
-
-If `OPENAI_API_KEY` is absent or the model call fails, the route returns a labelled deterministic fallback so every non-AI product flow remains demoable. It never pretends the fallback came from GPT-5.6.
-
-## Architecture
-
-```text
-React/Vinext dashboard
+React / Vinext (Next.js 16) Dashboard & Landing
         │
-        ├── /api/household ── D1 ── chores, bills, members, ledger
-        │                         └── fairness + reputation engine
+        ├── /api/household ──── Cloudflare D1 (Drizzle ORM)
+        │                         └── Payoff & Gini Engine
         │
-        └── /api/nudge ───── OpenAI Responses API (gpt-5.6-sol)
-                                  └── safe local fallback
+        ├── /api/nudge ──────── OpenAI Responses API (gpt-5.6-sol / luna)
+        │                         └── Safe Deterministic Fallback
+        │
+        └── /api/council ────── OpenAI Responses API (Structured Council Deliberation)
+                                  └── Multi-Option Safety Fallback
 ```
 
-Important source locations:
+### Key Source Locations
 
-- `app/synergy-landing.tsx` — cinematic landing page and interactive fairness simulator
-- `app/synergy-dashboard.tsx` — dashboard and Command Center product UI
-- `app/api/household/route.ts` — household reads and mutations
-- `app/api/nudge/route.ts` — GPT-5.6 mediation flow
-- `lib/household-store.ts` — D1 initialization, queries, and actions
-- `lib/game-engine.ts` — payoff, fairness, and reputation functions
-- `db/schema.ts` and `drizzle/` — durable schema and migration
+- `app/synergy-landing.tsx` — Cinematic 3D landing page and interactive fairness simulator
+- `app/synergy-dashboard.tsx` — Main application dashboard and Command Center UI
+- `app/api/household/route.ts` — Household state reads, additions, and mutations
+- `app/api/nudge/route.ts` — GPT-5.6 private nudge generation route
+- `app/api/council/route.ts` — GPT-5.6 Household Council deliberation route
+- `lib/household-store.ts` — D1 database initialization, queries, and atomic actions
+- `lib/game-engine.ts` — Payoff functions, Gini coefficient, and repeated-game memory
+- `db/schema.ts` — Drizzle ORM database schema definition
 
-## Local setup
+---
 
-Requirements: Node.js 22.13 or newer.
-
-```bash
-npm ci
-cp .env.example .env.local
-# Add OPENAI_API_KEY to .env.local for live GPT-5.6 nudges
-npm run dev
-```
-
-The local development server provisions a local D1-compatible database through the Sites/Vinext development environment. The first API request creates and seeds the Sunrise House demo.
-
-Generate a migration after changing `db/schema.ts`:
-
-```bash
-npm run db:generate
-```
-
-## API summary
+## 📡 API Reference
 
 ### `GET /api/household`
-
-Returns the household snapshot, member metrics, chores, bills, activity, saved nudges, and derived fairness statistics.
+Returns complete household state: snapshot metrics, member stats, chores, bills, activity log, saved nudges, and fairness analytics.
 
 ### `POST /api/household`
-
-Supported actions:
-
-- `complete_chore`
-- `pay_bill`
-- `create_chore`
-- `create_bill`
-- `reset_demo`
+Executes atomic state mutations. Supported actions:
+- `complete_chore`: `{ action: "complete_chore", choreId: string, memberId: string }`
+- `pay_bill`: `{ action: "pay_bill", billId: string, memberId: string }`
+- `create_chore`: `{ action: "create_chore", title, points, frequency, assigneeId, dueDate }`
+- `create_bill`: `{ action: "create_bill", title, amount, payerId, dueDate }`
+- `reset_demo`: `{ action: "reset_demo" }`
 
 ### `POST /api/nudge`
+Generates a private mediator message.
+- **Request**: `{ targetMemberId: string, taskId: string, tone: "warm" | "direct" | "playful" }`
+- **Response**: `{ message: string, generator: string, snapshot: HouseholdSnapshot }`
 
-Accepts `targetMemberId`, `taskId`, and one of the tones `warm`, `direct`, or `playful`. Returns the message, the actual generator label, and an updated snapshot.
+### `POST /api/council`
+Convenes the AI Household Council for structured dispute resolution.
+- **Request**: `{ issue: string, priority: "fairness" | "speed" | "flexibility" }`
+- **Response**: Structured 3-plan proposal `{ diagnosis, sharedGoal, options, recommendedOption, checkIn, safeguards, model, provenance }`
 
-## Three-person, two-day execution split
+---
 
-| Window | Person A — platform | Person B — experience | Person C — game/AI |
-| --- | --- | --- | --- |
-| Day 1 AM | D1 schema and APIs | Dashboard shell and responsive system | Payoff rules and seeded demo story |
-| Day 1 PM | Transactions and deployment | Chores, bills, activity interactions | Fairness metrics and mediator prompt |
-| Day 2 AM | Error handling and state tests | Motion, accessibility, mobile polish | GPT-5.6 evaluation and safety cases |
-| Day 2 PM | Production verification | Demo recording | Pitch, metrics, and judge Q&A |
+## 🚀 Getting Started & Local Development
 
-## Three-minute demo script
+### Prerequisites
+- **Node.js**: `>=22.13.0`
+- **npm**: `>=10.0.0`
 
-1. Start on Overview and explain the 0–100 Harmony and Fairness indicators.
-2. Switch the active member, complete an overdue chore, and show the live token/activity update.
-3. Open Bills and point out that reputation ignores the bill amount.
-4. Open Fairness Lab and explain the repeated-game memory rule.
-5. Generate a private mediator nudge and show the real model/fallback label.
-6. Reset the demo house for the next judge.
+### Step-by-Step Setup
 
-## Scope and safety
+1. **Clone the repository and install dependencies**:
+   ```bash
+   git clone https://github.com/Anurag-446/Synergy-Split.git
+   cd Synergy-Split
+   npm ci
+   ```
 
-This build coordinates a small, consent-based household. It is not a credit score, payroll system, financial ledger, or tool for landlords and employers. A production expansion should add invitations, household-level authorization, audit/export controls, deletion workflows, explicit nudge consent, rate limits, and evaluation with real shared-home participants before real-world use.
+2. **Configure Environment Variables**:
+   Create a `.env.local` file:
+   ```bash
+   cp .env.example .env.local
+   ```
+   *Optional: Add your `OPENAI_API_KEY` for live GPT-5.6 model calls.*
+
+3. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   *The server provisions a local Cloudflare D1-compatible database environment. The first request automatically seeds the default "Sunrise House" demo.*
+
+4. **Available Scripts**:
+   - `npm run dev` — Launch Vite/Vinext development server
+   - `npm run build` — Build production application
+   - `npm run start` — Run production server
+   - `npm test` — Run automated test suite
+   - `npm run lint` — Lint codebase with ESLint
+   - `npm run db:generate` — Generate Drizzle migrations
+
+---
+
+## 👥 3-Person, 2-Day Hackathon Execution Split
+
+| Window | Person A (Platform) | Person B (Experience) | Person C (Game & AI) |
+|---|---|---|---|
+| **Day 1 AM** | D1 schema & API routes | Dashboard shell & design system | Payoff rules & seeded demo data |
+| **Day 1 PM** | Transactions & deployment | Chores, bills & activity feeds | Fairness metrics & nudge prompts |
+| **Day 2 AM** | State tests & error handling | Motion, responsive & mobile polish | GPT-5.6 evaluation & safety fallbacks |
+| **Day 2 PM** | Production verification | Video recording & asset creation | Pitch deck & judge Q&A |
+
+---
+
+## 🎬 3-Minute Demo Walkthrough Script
+
+1. **Overview**: Start on Overview; explain the 0–100 Harmony Index and Gini-based Fairness indicators.
+2. **Interactive Action**: Switch active member, complete an overdue chore, and demonstrate instant live token & activity log updates.
+3. **Bill Equity**: Navigate to Bills; highlight that token rewards ignore dollar amounts for financial fairness.
+4. **Fairness Mechanics**: Open Fairness Lab; walk through the repeated-game memory algorithm.
+5. **Private Nudges**: Generate a private mediator nudge; show the real model label (`gpt-5.6-sol` or `demo-safety-fallback`).
+6. **Household Council**: Convene the council on an open chore dispute; show the 3 materially distinct options and provenance guarantees.
+7. **Reset**: Click **Reset Demo** to restore pristine state for the next judge.
+
+---
+
+## 🛡️ Safety, Privacy & Scope Boundaries
+
+SynergySplit is designed specifically for small, voluntary, consent-based shared households. 
+
+- **Not a financial or surveillance tool**: It is explicitly not a credit score, payroll system, financial ledger, or employee/tenant tracking tool.
+- **Future Production Requirements**: Any real-world deployment requires explicit invitations, RBAC permissions, audit export, deletion workflows, explicit nudge opt-in, strict API rate-limiting, and user consent validation.
+
+---
+
+<p align="center">Made with ❤️ for friction-free shared living</p>
