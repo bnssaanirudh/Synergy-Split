@@ -21,6 +21,7 @@
   - [Repeated-Game Memory & Reputation](#repeated-game-reputation)
   - [Household Fairness (Gini Coefficient)](#household-fairness)
 - [AI Architecture & GPT-5.6 Integration](#-ai-architecture--gpt-56-integration)
+- [How Codex & GPT-5.6 Were Used](#-how-codex--gpt-56-were-used)
 - [System Architecture](#-system-architecture)
 - [API Reference](#-api-reference)
 - [Getting Started & Local Development](#-getting-started--local-development)
@@ -114,6 +115,25 @@ The server-only routes (`/api/nudge` and `/api/council`) interact with the OpenA
 - **Inert Data Handling**: All user-supplied inputs (names, descriptions, task titles) are sanitized as inert data.
 - **Strict Prohibition**: Instructions explicitly forbid shaming, threat escalation, psychological diagnoses, public rankings, or financial advice.
 - **Fallback Guarantee**: If `OPENAI_API_KEY` is missing or requests fail, a transparent, labelled deterministic fallback engine generates structured outputs without breaking application workflows.
+
+---
+
+## 🧠 How Codex & GPT-5.6 Were Used
+
+SynergySplit deeply integrates **OpenAI GPT-5.6** into runtime application features and leveraged **OpenAI Codex** during development:
+
+1. **GPT-5.6 Sol Mediator (`/api/nudge`)**:
+   - Acts as a private, neutral household mediator via the OpenAI Responses API (`model: gpt-5.6-sol`, low reasoning effort).
+   - Generates non-punitive, face-saving reminder messages tailored to requested tones (`warm`, `direct`, `playful`).
+
+2. **GPT-5.6 Household Council (`/api/council`)**:
+   - Powers structured household dispute resolution by analyzing live D1 ledger imbalances and open tasks.
+   - Generates exactly 3 materially distinct agreement plans with explicit trade-offs, member assignments, safety boundaries, and a 7-day review check-in.
+   - Implements a resilient model cascade: `gpt-5.6-sol` → `gpt-5.6-luna` → labelled deterministic safety fallback.
+
+3. **OpenAI Codex & Pair Programming**:
+   - Utilized during development for end-to-end full-stack code generation, including Drizzle ORM schema design (`db/schema.ts`), repeated-game reputation engine math (`lib/game-engine.ts`), Cloudflare D1 atomic transaction queries (`lib/household-store.ts`), and interactive 3D landing page components (`app/synergy-landing.tsx`).
+
 
 ---
 
